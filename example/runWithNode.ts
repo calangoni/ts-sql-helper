@@ -37,6 +37,7 @@ function executarScriptInterface (tablesFileContents: string, scriptFileContents
       const lines = fScript.lines.split('\n').map(x => x.trim()).filter(x => !!x);
       try {
         lines.forEach(x => q.parseLine(x));
+        q.disableModifLog = fScript.disableModifLog;
         fScript.generated = q.genParsed();
       } catch (err) {
         console.error(err);

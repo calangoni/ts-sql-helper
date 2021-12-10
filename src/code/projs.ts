@@ -1,6 +1,7 @@
-export interface InfoBlock { lines?: string, generated?: string, fixedPost?: string };
+export interface InfoBlock { lines?: string, generated?: string, fixedPost?: string, disableModifLog?: boolean };
 
 export function parseInterface (text: string): InfoBlock[] {
+  const disableModifLog = /\n?\/\/ @IFHELPER:CONFIG DISABLE_MODIF_LOG\n/.test(text);
   const fBlocks = `\n${text}`.split('\n/* @IFHELPER:');
   const blocks: InfoBlock[] = [];
   blocks.push({ fixedPost: fBlocks[0] + '\n' });
@@ -24,7 +25,7 @@ export function parseInterface (text: string): InfoBlock[] {
 
     const lines = parts1[0].trim(); // .split('\n');
 
-    blocks.push({ lines, generated: parts2[0], fixedPost: parts2[1] });
+    blocks.push({ lines, generated: parts2[0], fixedPost: parts2[1], disableModifLog });
   }
   return blocks;
 }
@@ -35,11 +36,11 @@ export function generateInterface (blocks: InfoBlock[]): string {
     if (block.lines && block.lines.trim()) {
       text += '\n' + '/* @IFHELPER:' + block.lines.trim() + '\n';
       text += '*/' + '\n';
-      text += (block.generated || '').trim() + '\n';
+      if (block.generated) text += (block.generated || '').trim() + '\n';
       // text += '// @IFHELPER:END' + '\n';
     }
     if (block.fixedPost) {
-      text += block.fixedPost + '\n';
+      text += '\n' + (block.fixedPost || '').trim() + '\n';
     }
   }
   return text.trim().replace(/\n[ \n\t\r]+\n/, '\n\n').replace(/\n[ \n\t\r]+\n/, '\n\n') + '\n';
